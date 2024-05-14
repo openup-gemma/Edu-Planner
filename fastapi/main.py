@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
-from intoGPT import create_study_advice_prompt
+from intoGPT import create_study_advice_prompt, create_study_advice_prompt_with_search, search_related_information
 
 app = FastAPI()
 
