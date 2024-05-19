@@ -19,6 +19,7 @@ drive.mount('/content/drive')
 ### Source : https://devocean.sk.com/blog/techBoardDetail.do?ID=165703&boardType=techBlog
 """
 
+# install needed sources
 !pip install -q -U transformers==4.38.2
 !pip install -q -U datasets==2.18.0
 !pip install -q -U bitsandbytes==0.42.0
@@ -26,6 +27,7 @@ drive.mount('/content/drive')
 !pip install -q -U trl==0.7.11
 !pip install -q -U accelerate==0.27.2
 
+# import needed sources
 import torch
 from datasets import Dataset, load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline, TrainingArguments
@@ -35,32 +37,28 @@ from trl import SFTTrainer
 from huggingface_hub import notebook_login
 notebook_login()
 
-#from datasets import load_dataset
+# load_dataset : about advices related to depression
 dataset = load_dataset("ziq/depression_advice")
+dataset # check dataset -> 'train', 'test'
+dataset['train'][0] 
+doc = dataset['train']['text'][0]
 
-dataset
-
-dataset['train'][0]
-
-BASE_MODEL = "google/gemma-2b-it"
-
+# load model : gemma-2b
+BASE_MODEL = "google/gemma-2b-it" 
 model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, device_map={"":0})
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, add_special_tokens=True)
 
 # Chat Template : https://huggingface.co/docs/transformers/main/en/chat_templating
-
-doc = dataset['train']['text'][0]
-
 messages = [
     { "role": "user",
-     "content": "이번 모의고사 성적에서는 국어가 3등급이에요." },
+     "content": "이번 모의고사 성적에서는 국어가 3등급이에요." }, # user's worries
 ]
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=512)
-prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True) # chat template above
 
 input_ids = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-outputs = model.generate(
+outputs = model.generate( # .generate() method
     **input_ids,
     max_new_tokens=512,
     do_sample=True,
@@ -69,4 +67,4 @@ outputs = model.generate(
     repetition_penalty=1.1,
 )
 
-print(tokenizer.decode(outputs[0]))
+print(tokenizer.decode(outputs[0])) # answers are differnet everytime running this.
